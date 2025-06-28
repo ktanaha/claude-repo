@@ -1,6 +1,16 @@
-#### 言語
+## 言語設定
+- **応答言語**: すべての応答を日本語で行ってください
+- **コメント**: コード内のコメントも日本語で記述してください
+- **説明**: 技術的な説明や手順も日本語で提供してください
 
-必ず日本語で応答してください。
+# Communication Guidelines
+- Always respond in Japanese (日本語で応答してください)
+- Write code comments in Japanese
+- Explain technical concepts in Japanese
+- Provide error explanations in Japanese
+
+## コミュニケーション方針
+このプロジェクトでは、すべてのやり取りを日本語で行います。コードの説明、エラーメッセージの解釈、提案事項などもすべて日本語でお願いします。
 
 #### リファクタリング時
 ```
