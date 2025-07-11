@@ -32,6 +32,8 @@
 **どんな機能開発でも、最初に以下を確認**：
 - [ ] .gitignoreファイルが作成されているか？
 - [ ] claude.mdとCLAUDE.mdが.gitignoreに記載されているか？
+- [ ] vibe-coding-logger（https://github.com/ktanaha/vibe-coding-logger）がプロジェクトに統合されているか？
+- [ ] ロギングシステムが適切に設定されているか？
 - [ ] テストが書かれているか？
 - [ ] テストが失敗するか？
 - [ ] 実装はテストを通すだけか？
@@ -173,6 +175,7 @@ services:
 - Docker Composeで開発環境構築
 - 各環境のバージョンは整合性がとれるものを選択
 - 各層のテスト環境も含める
+- 【必須】vibe-coding-logger（https://github.com/ktanaha/vibe-coding-logger）を統合し、開発中のロギング機能を実装する
 - 【重要】git initと同時に.gitignoreを作成し、claude.mdとCLAUDE.mdを必ず除外する」
 ```
 
@@ -181,6 +184,7 @@ services:
 「[API名]を実装してください。
 - TDDで進める（Red-Green-Refactor厳守）
 - Goでクリーンアーキテクチャ適用
+- vibe-coding-loggerを使用してリクエスト・レスポンスをログ出力
 - OpenAPI 3.0.3仕様書も生成
 - ドメインロジックを中心に設計」
 ```
@@ -192,6 +196,7 @@ services:
 - React + TypeScript
 - Atomic Designパターン
 - React Testing Libraryでテスト
+- vibe-coding-loggerを使用してユーザーアクションとAPIコールをログ出力
 - APIとの通信部分は分離」
 ```
 
@@ -210,13 +215,14 @@ services:
 # 開発フロー
 
 1. **環境構築**: Docker Composeで開発環境立ち上げ
-2. **API設計**: OpenAPI 3.0.3仕様書作成
-3. **バックエンド開発**: TDDでAPI実装
-4. **継続的リファクタリング**: 機能実装後に小さなステップで改善
-5. **フロントエンド開発**: モックAPIでUI作成
-6. **フロントエンドリファクタリング**: コンポーネント設計改善
-7. **統合**: 実際のAPIと接続
-8. **E2Eテスト**: 全体動作確認
+2. **ロギング統合**: vibe-coding-loggerをプロジェクトに統合
+3. **API設計**: OpenAPI 3.0.3仕様書作成
+4. **バックエンド開発**: TDDでAPI実装（ロギング機能含む）
+5. **継続的リファクタリング**: 機能実装後に小さなステップで改善
+6. **フロントエンド開発**: モックAPIでUI作成（ロギング機能含む）
+7. **フロントエンドリファクタリング**: コンポーネント設計改善
+8. **統合**: 実際のAPIと接続
+9. **E2Eテスト**: 全体動作確認
 
 ---
 
@@ -400,3 +406,80 @@ Closes #123
 - 一時的なスクリプト
 
 **その場合も最低限のテストは必須**
+
+---
+
+# vibe-coding-logger統合ガイド
+
+## 必須統合手順
+**すべての開発プロジェクトで以下を実行**（例外なし）：
+
+### 1. プロジェクト開始時
+```bash
+# vibe-coding-loggerのクローンまたは統合
+git submodule add https://github.com/ktanaha/vibe-coding-logger.git
+# または
+git clone https://github.com/ktanaha/vibe-coding-logger.git
+```
+
+### 2. バックエンド（Go）への統合
+```go
+// パッケージの追加
+import "github.com/ktanaha/vibe-coding-logger/pkg/logger"
+
+// 初期化
+logger := logger.New()
+
+// 使用例
+logger.Info("API開始", map[string]interface{}{
+    "endpoint": "/api/users",
+    "method": "GET",
+})
+```
+
+### 3. フロントエンド（React/TypeScript）への統合
+```typescript
+// vibe-coding-loggerのクライアントライブラリを使用
+import { VibeCodingLogger } from 'vibe-coding-logger';
+
+const logger = new VibeCodingLogger();
+
+// 使用例
+logger.logUserAction('button_click', {
+    component: 'LoginButton',
+    timestamp: new Date().toISOString()
+});
+```
+
+### 4. Docker環境での設定
+```yaml
+# docker-compose.ymlに追加
+services:
+  backend:
+    environment:
+      - VIBE_LOGGER_ENABLED=true
+      - VIBE_LOGGER_LEVEL=debug
+  
+  frontend:
+    environment:
+      - REACT_APP_VIBE_LOGGER_ENABLED=true
+```
+
+## ロギング対象
+### バックエンド
+- APIリクエスト/レスポンス
+- データベース操作
+- エラーハンドリング
+- ビジネスロジック実行
+
+### フロントエンド
+- ユーザーアクション（クリック、入力等）
+- API呼び出し
+- ページ遷移
+- エラー発生
+
+## 設定要件
+- 開発環境では詳細ログを有効化
+- 本番環境では必要最小限のログのみ
+- 個人情報は絶対にログに含めない
+- パフォーマンスに影響しない設定
