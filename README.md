@@ -61,24 +61,51 @@ project/
 └── README.md           # このファイル
 ```
 
-## 開発の始め方
+## 開発を始める前の必須初期化手順
 
-### 1. 環境セットアップ
+### ⚠️ 重要: 開発開始前に必ずこの手順を実行してください
 
+**ワンライナーで初期化:**
 ```bash
-# リポジトリクローン
+curl -fsSL https://raw.githubusercontent.com/[username]/claude-repo/main/setup.sh | bash
+```
+
+**手動での初期化:**
+```bash
+# リポジトリをクローンしてsetup.shを実行
 git clone [repository-url]
 cd claude-repo
+./setup.sh
+```
 
+このスクリプトは以下を自動実行します：
+- .gitignoreファイルの作成（claude.md、CLAUDE.mdを除外）
+- vibe-coding-loggerの統合
+- プロジェクト構造の作成（frontend/backend/docs）
+- 基本設定ファイルの生成（package.json、go.mod、docker-compose.yml）
+- 初期コミットの実行
+
+## 開発の始め方
+
+### 1. 環境セットアップ（初期化後）
+
+```bash
 # 開発環境起動
 docker-compose up
 ```
 
-### 2. vibe-coding-logger統合
+### 2. 個別プロジェクトのセットアップ
 
 ```bash
-# ロギングシステムの統合
-git submodule add https://github.com/ktanaha/vibe-coding-logger.git
+# フロントエンド開発環境
+cd frontend
+npm install
+npm run dev
+
+# バックエンド開発環境
+cd backend
+go mod tidy
+go run cmd/main.go
 ```
 
 ### 3. 開発フロー
