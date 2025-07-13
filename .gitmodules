@@ -1,0 +1,3 @@
+[submodule "vibe-coding-logger"]
+	path = vibe-coding-logger
+	url = https://github.com/ktanaha/vibe-coding-logger.git
