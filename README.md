@@ -61,38 +61,60 @@ project/
 └── README.md           # このファイル
 ```
 
-## 開発を始める前の必須初期化手順
+## 他のプロジェクトでの使用方法
 
-### ⚠️ 重要: 開発開始前に必ずこの手順を実行してください
+### ⚠️ このリポジトリをサブモジュールとして統合
 
-**ワンライナーで初期化:**
+このリポジトリは、他のプロジェクトにサブモジュールとして統合することで、Claude Code開発ガイドラインを共有できます。
+
+**ワンライナーで統合:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ktanaha/claude-repo/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ktanaha/claude-repo/master/setup.sh | bash
 ```
 
-**サブモジュールとして他のプロジェクトに組み込む:**
+**手動での統合:**
 ```bash
-# 既存プロジェクトのルートディレクトリで実行
-git submodule add https://github.com/ktanaha/claude-repo.git claude-tools
-cd claude-tools
+# 既存のプロジェクトディレクトリで実行
 ./setup.sh
-cd ..
+
+# オプション付きでの実行
+./setup.sh --help           # ヘルプを表示
+./setup.sh --force          # 既存のサブモジュールを強制再作成
+./setup.sh --no-link        # シンボリックリンクを作成しない
 ```
 
-**手動での初期化:**
+**統合により自動実行される処理:**
+- サブモジュールとしてclaude-repoを追加
+- .gitignoreファイルの更新（claude.md、CLAUDE.mdを除外）
+- CLAUDE.mdへのシンボリックリンク作成
+- 必要なGit設定の追加
+
+**統合後のプロジェクト構造:**
+```
+your-project/
+├── claude-guidelines/      # サブモジュール
+│   ├── claude.md          # 開発ガイドライン
+│   ├── setup.sh           # 統合スクリプト
+│   └── README.md          # このファイル
+├── CLAUDE.md              # シンボリックリンク → claude-guidelines/claude.md
+├── .gitignore             # 自動更新済み
+└── （あなたのプロジェクトファイル）
+```
+
+## サブモジュール管理
+
+### サブモジュールの更新
 ```bash
-# リポジトリをクローンしてsetup.shを実行
-git clone https://github.com/ktanaha/claude-repo.git
-cd claude-repo
-./setup.sh
-```
+# ガイドラインを最新版に更新
+git submodule update --remote claude-guidelines
 
-このスクリプトは以下を自動実行します：
-- .gitignoreファイルの作成（claude.md、CLAUDE.mdを除外）
-- vibe-coding-loggerの統合
-- プロジェクト構造の作成（frontend/backend/docs）
-- 基本設定ファイルの生成（package.json、go.mod、docker-compose.yml）
-- 初期コミットの実行
+# サブモジュールを含めてクローン
+git clone --recursive [your-repository-url]
+
+# 既存リポジトリでサブモジュールを初期化
+git submodule init
+git submodule update
+```
 
 ## 開発の始め方
 
