@@ -67,13 +67,22 @@ project/
 
 **ワンライナーで初期化:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/[username]/claude-repo/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ktanaha/claude-repo/main/setup.sh | bash
+```
+
+**サブモジュールとして他のプロジェクトに組み込む:**
+```bash
+# 既存プロジェクトのルートディレクトリで実行
+git submodule add https://github.com/ktanaha/claude-repo.git claude-tools
+cd claude-tools
+./setup.sh
+cd ..
 ```
 
 **手動での初期化:**
 ```bash
 # リポジトリをクローンしてsetup.shを実行
-git clone [repository-url]
+git clone https://github.com/ktanaha/claude-repo.git
 cd claude-repo
 ./setup.sh
 ```
