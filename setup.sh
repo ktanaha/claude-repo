@@ -74,11 +74,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Gitリポジトリかチェック
+# Gitリポジトリかチェック（なければ初期化）
 if [ ! -d ".git" ]; then
-    print_error "このディレクトリはGitリポジトリではありません"
-    print_info "git init を実行してからこのスクリプトを実行してください"
-    exit 1
+    print_info "Gitリポジトリを初期化しています..."
+    git init
+    print_success "Gitリポジトリが初期化されました"
 fi
 
 # サブモジュールのURL
