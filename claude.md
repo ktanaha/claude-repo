@@ -483,3 +483,300 @@ services:
 - 本番環境では必要最小限のログのみ
 - 個人情報は絶対にログに含めない
 - パフォーマンスに影響しない設定
+
+---
+
+# CI/CD設定
+
+## 必須CI/CD設定ファイル作成
+**すべてのプロジェクトで自動化されたCI/CDパイプラインを構築する**（例外なし）
+
+### GitHub Actions設定
+`.github/workflows/ci.yml`を作成：
+
+```yaml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install backend dependencies
+      working-directory: backend
+      run: go mod download
+    
+    - name: Install frontend dependencies
+      working-directory: frontend
+      run: npm ci
+    
+    - name: Run backend tests
+      working-directory: backend
+      run: go test -v ./...
+      env:
+        DATABASE_URL: postgres://test_user:test_pass@localhost:5432/test_db?sslmode=disable
+    
+    - name: Run frontend tests
+      working-directory: frontend
+      run: npm test -- --coverage --watchAll=false
+    
+    - name: Build frontend
+      working-directory: frontend
+      run: npm run build
+    
+    - name: Build backend
+      working-directory: backend
+      run: go build -v ./...
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to staging
+      run: echo "デプロイプロセスをここに記述"
+```
+
+### GitLab CI設定
+`.gitlab-ci.yml`を作成：
+
+```yaml
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  POSTGRES_DB: test_db
+  POSTGRES_USER: test_user
+  POSTGRES_PASSWORD: test_pass
+
+test:
+  stage: test
+  image: golang:1.21
+  services:
+    - postgres:15
+  script:
+    - cd backend && go test -v ./...
+    - cd frontend && npm ci && npm test -- --coverage --watchAll=false
+  coverage: '/coverage: \d+\.\d+% of statements/'
+
+build:
+  stage: build
+  script:
+    - cd backend && go build -v ./...
+    - cd frontend && npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
+    expire_in: 1 hour
+
+deploy:
+  stage: deploy
+  script:
+    - echo "デプロイプロセスをここに記述"
+  only:
+    - main
+```
+
+## CI/CDパイプライン要件
+
+### 必須項目
+- [ ] 全テストの自動実行
+- [ ] フロントエンド・バックエンドのビルド確認
+- [ ] 静的解析（リンター、型チェック）
+- [ ] セキュリティスキャン
+- [ ] カバレッジレポート生成
+- [ ] vibe-coding-loggerの統合テスト
+
+### ブランチ戦略連携
+- **main**: 本番デプロイ
+- **develop**: ステージングデプロイ
+- **feature/**: テストのみ実行
+- **hotfix/**: 緊急パッチデプロイ
+
+### 品質ゲート
+- テストカバレッジ: 最低80%
+- テスト成功率: 100%
+- セキュリティ脆弱性: High/Critical 0件
+- 型エラー: 0件
+
+---
+
+# プロダクトバックログ管理
+
+## 必須バックログファイル作成
+**すべてのプロジェクトでプロダクトバックログを作成・維持する**（例外なし）
+
+### PRODUCT_BACKLOG.md作成
+プロジェクトルートに`PRODUCT_BACKLOG.md`を作成：
+
+```markdown
+# プロダクトバックログ
+
+## バックログ管理ルール
+- 【重要】すべての変更・追加・削除をこのファイルに記録する
+- 優先度: Critical → High → Medium → Low
+- ストーリーポイント: 1, 2, 3, 5, 8, 13, 21
+- 状態: Todo → In Progress → Review → Done
+
+## エピック
+
+### E001: ユーザー管理システム
+**概要**: ユーザーの登録・認証・プロフィール管理
+**ビジネス価値**: セキュアなユーザー体験の提供
+**期限**: 2024-XX-XX
+
+## ユーザーストーリー
+
+### 現在のスプリント (YYYY-MM-DD - YYYY-MM-DD)
+
+#### US001: ユーザー登録機能
+- **As a** 新規ユーザー
+- **I want to** アカウントを作成したい
+- **So that** サービスを利用できる
+- **優先度**: High
+- **ストーリーポイント**: 5
+- **エピック**: E001
+- **状態**: Todo
+- **作成日**: 2024-XX-XX
+- **担当者**: 開発者A
+
+**受け入れ条件**:
+- [ ] メールアドレスでの登録
+- [ ] パスワード強度チェック
+- [ ] 重複メール防止
+- [ ] 確認メール送信
+
+**技術要件**:
+- [ ] バックエンドAPI実装
+- [ ] フロントエンドフォーム作成
+- [ ] バリデーション実装
+- [ ] テスト作成（TDD厳守）
+
+#### US002: ログイン機能
+- **As a** 登録済みユーザー
+- **I want to** ログインしたい
+- **So that** マイページにアクセスできる
+- **優先度**: High
+- **ストーリーポイント**: 3
+- **エピック**: E001
+- **状態**: Todo
+- **作成日**: 2024-XX-XX
+- **担当者**: 開発者A
+
+**受け入れ条件**:
+- [ ] メールアドレス・パスワードでログイン
+- [ ] ログイン状態の保持
+- [ ] ログイン失敗時のエラー表示
+- [ ] セキュリティ対策（ブルートフォース防止）
+
+**技術要件**:
+- [ ] JWT認証実装
+- [ ] セッション管理
+- [ ] セキュリティヘッダー設定
+- [ ] テスト作成（TDD厳守）
+
+## バックログアイテム（優先度順）
+
+### Critical
+（システムの動作に必須な機能）
+
+### High
+- US001: ユーザー登録機能
+- US002: ログイン機能
+
+### Medium
+（ユーザー体験向上のための機能）
+
+### Low
+（Nice to have機能）
+
+## 技術的負債・改善項目
+
+### TD001: レガシーコードのリファクタリング
+- **詳細**: XXXモジュールの可読性改善
+- **影響度**: Medium
+- **見積もり**: 8ポイント
+- **期限**: 2024-XX-XX
+
+## 完了済みアイテム
+
+### Sprint 1 (YYYY-MM-DD - YYYY-MM-DD)
+- ✅ US000: プロジェクト初期設定
+  - 完了日: 2024-XX-XX
+  - 実績ポイント: 3
+  - 振り返り: Docker環境構築が予想より時間かかった
+
+## 変更履歴
+
+### 2024-XX-XX
+- プロダクトバックログ初期作成
+- エピックE001追加
+- ユーザーストーリーUS001, US002追加
+
+### 2024-XX-XX
+- US001の優先度をMediumからHighに変更
+- 理由: 顧客要求の変更
+```
+
+## バックログ更新ルール
+
+### 必須更新タイミング
+1. **新機能追加時**: ユーザーストーリーとして記録
+2. **機能変更時**: 既存ストーリーの更新または新規作成
+3. **バグ発見時**: 欠陥として記録
+4. **技術的改善時**: 技術的負債として記録
+5. **スプリント終了時**: 完了アイテムの移動と振り返り
+
+### 記録必須項目
+- **変更日時**: いつ変更したか
+- **変更内容**: 何を変更したか
+- **変更理由**: なぜ変更したか
+- **影響範囲**: どこに影響するか
+- **担当者**: 誰が担当するか
+
+### 更新フォーマット
+```markdown
+### YYYY-MM-DD HH:MM
+- **変更内容**: US003新規追加
+- **変更理由**: 顧客からの新要求
+- **担当者**: 開発者B
+- **影響**: スプリント2に追加、E001エピックに含める
+```
