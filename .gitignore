@@ -1,6 +1,7 @@
 # Claude Code設定ファイル（重要）
 claude.md
 CLAUDE.md
+CLAUDE_*.md
 
 # OS固有ファイル
 .DS_Store
