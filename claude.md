@@ -1,12 +1,12 @@
 # Claude Code開発ガイドライン
 
 ## 関連ドキュメント
-- [TDDとテスト戦略](CLAUDE_TDD.md)
-- [Git管理・バージョン管理](CLAUDE_GIT.md)
-- [CI/CD設定](CLAUDE_CICD.md)
-- [セキュリティ・安全性ルール](CLAUDE_SECURITY.md)
-- [vibe-coding-logger統合ガイド](CLAUDE_LOGGER.md)
-- [プロダクトバックログ管理](CLAUDE_BACKLOG.md)
+- [TDDとテスト戦略](docs/CLAUDE_TDD.md)
+- [Git管理・バージョン管理](docs/CLAUDE_GIT.md)
+- [CI/CD設定](docs/CLAUDE_CICD.md)
+- [セキュリティ・安全性ルール](docs/CLAUDE_SECURITY.md)
+- [vibe-coding-logger統合ガイド](docs/CLAUDE_LOGGER.md)
+- [プロダクトバックログ管理](docs/CLAUDE_BACKLOG.md)
 
 ## 言語設定・コミュニケーション方針
 - **応答言語**: すべての応答を日本語で行う
